@@ -17,7 +17,7 @@ const int CELL_HEIGHT = 20;
 const int Infinity = 10000;
 
 typedef enum { Treasure, Vampire, Ghost, Bats, Path, Empty, Wall } Entity;
-typedef enum { Up, Down, Left, Right, None } Dir;
+typedef enum { Up=0, Down, Left, Right, None } Dir;
 
 class Cell {
     public:
@@ -210,6 +210,8 @@ class Maze {
         int y=fy;
         while (!(x==sx && y==sy)) {
             this->cells[y][x].e = Path;
+            // This code steps in the direction of the lowest value
+            // Don't really like how it turned out.
             vector<int> v{
                 (y>0&&this->cells[y][x].up==true)?distances[y-1][x]:Infinity,
                 (y<this->height-1&&this->cells[y][x].down==true)?distances[y+1][x]:Infinity,
@@ -218,13 +220,12 @@ class Maze {
             };
 
             int m = *min_element(v.begin(), v.end());
-            if (m==v[0]) y--;
-            else if (m==v[1]) y++;
-            else if (m==v[2]) x--;
-            else if (m==v[3]) x++;
-            else printf("Error\n");
+            if (m==v[Up]) y--;
+            else if (m==v[Down]) y++;
+            else if (m==v[Left]) x--;
+            else if (m==v[Right]) x++;
         }
-                
+        this->cells[y][x].e = Path;      
     }
 
     int width;
@@ -236,7 +237,7 @@ void mobSwaps(Maze &m) {
     // Check every cell
     for (int x=0;x<m.width;x++) {
         for (int y=0;y<m.height;y++) {
-            // if the cell is a ghost
+            // if the cell is a ghost or vampire
             if (m.cells[y][x].e == Vampire || m.cells[y][x].e == Ghost) {
                 // Walk to the path
 
@@ -310,7 +311,6 @@ void ppmg8(const char *fileName, Entity *bitmap, int width, int height) {
                     default:
                         printf("Error here %d\n", bitmap[x+y*width]);
                 }
-//                fprintf(fptr, "%d %d %d  ",bitmap[x+y*width],bitmap[x+y*width],bitmap[x+y*width]);
             }
             fprintf(fptr, "\n");
         }
