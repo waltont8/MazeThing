@@ -317,6 +317,182 @@ void ppmg8(const char *fileName, Entity *bitmap, int width, int height) {
         fclose(fptr);
 }
 
+struct vertex {
+  float x,y,z;
+};
+
+struct face {
+  int f1,f2,f3;
+};
+
+void dumpToObj(const char *fileName, Maze &m) {
+    vector<vertex> v;
+    vector<face> f;
+
+    for (int x=0;x<m.width;x++) {
+        for (int y=0;y<m.height;y++) {
+            // 8 corners of the cube
+                // Base
+                v.push_back({0.1f+x,0.1f+y,0.1});
+                v.push_back({0.1f+x,0.9f+y,0.1});
+                v.push_back({0.9f+x,0.9f+y,0.1});
+                v.push_back({0.9f+x,0.1f+y,0.1});
+                // Top
+                v.push_back({0.1f+x,0.1f+y,0.9});
+                v.push_back({0.1f+x,0.9f+y,0.9});
+                v.push_back({0.9f+x,0.9f+y,0.9});
+                v.push_back({0.9f+x,0.1f+y,0.9});
+            // 4 Exit corridors
+                // +x
+                    // Base
+                    v.push_back({0.9f+x,0.1f+y,0.1});
+                    v.push_back({0.9f+x,0.9f+y,0.1});
+                    v.push_back({1.0f+x,0.9f+y,0.1});
+                    v.push_back({1.0f+x,0.1f+y,0.1});
+                    // Top
+                    v.push_back({0.9f+x,0.1f+y,0.9});
+                    v.push_back({0.9f+x,0.9f+y,0.9});
+                    v.push_back({1.0f+x,0.9f+y,0.9});
+                    v.push_back({1.0f+x,0.1f+y,0.9});
+                // -x
+                    // Base
+                    v.push_back({0.0f+x,0.1f+y,0.1});
+                    v.push_back({0.0f+x,0.9f+y,0.1});
+                    v.push_back({0.1f+x,0.9f+y,0.1});
+                    v.push_back({0.1f+x,0.1f+y,0.1});
+                    // Top
+                    v.push_back({0.0f+x,0.1f+y,0.9});
+                    v.push_back({0.0f+x,0.9f+y,0.9});
+                    v.push_back({0.1f+x,0.9f+y,0.9});
+                    v.push_back({0.1f+x,0.1f+y,0.9});
+                // +y
+                    // Base
+                    v.push_back({0.1f+x,0.9f+y,0.1});
+                    v.push_back({0.1f+x,1.0f+y,0.1});
+                    v.push_back({0.9f+x,1.0f+y,0.1});
+                    v.push_back({0.9f+x,0.9f+y,0.1});
+                    // Top
+                    v.push_back({0.1f+x,0.9f+y,0.9});
+                    v.push_back({0.1f+x,1.0f+y,0.9});
+                    v.push_back({0.9f+x,1.0f+y,0.9});
+                    v.push_back({0.9f+x,0.9f+y,0.9});
+                // -y
+                    // Base
+                    v.push_back({0.1f+x,0.1f+y,0.1});
+                    v.push_back({0.9f+x,0.1f+y,0.1});
+                    v.push_back({0.9f+x,0.0f+y,0.1});
+                    v.push_back({0.1f+x,0.0f+y,0.1});
+                    // Top
+                    v.push_back({0.9f+x,0.1f+y,0.9});
+                    v.push_back({0.9f+x,0.0f+y,0.9});
+                    v.push_back({0.1f+x,0.0f+y,0.9});
+                    v.push_back({0.1f+x,0.1f+y,0.9});
+
+            // 6 faces
+                int n = v.size() - 8*(4+1);
+                // 1 - base
+                f.push_back({1+n,2+n,3+n});
+                f.push_back({3+n,4+n,1+n});
+                // 2 - top
+                f.push_back({5+n,6+n,7+n});
+                f.push_back({7+n,8+n,5+n});
+                // 3 - left
+                if (!(m.cells[y][x]).left) {
+                f.push_back({1+n,5+n,2+n});
+                f.push_back({2+n,5+n,6+n});
+                }
+                // 4 - back
+                if (!(m.cells[y][x]).down) {
+                f.push_back({2+n,6+n,3+n});
+                f.push_back({3+n,6+n,7+n});
+                }
+                // 5 - right
+                if (!(m.cells[y][x]).right) {
+                f.push_back({4+n,3+n,7+n});
+                f.push_back({7+n,8+n,4+n});
+                }
+                // 6 - front
+                if (!(m.cells[y][x]).up) {
+                f.push_back({1+n,5+n,4+n});
+                f.push_back({4+n,5+n,8+n});
+                }
+            // Exit +x
+                n = v.size() - 8*(4);
+                if ((m.cells[y][x]).right) {
+                // 1 - base
+                f.push_back({1+n,2+n,3+n});
+                f.push_back({3+n,4+n,1+n});
+                // 2 - top
+                f.push_back({5+n,6+n,7+n});
+                f.push_back({7+n,8+n,5+n});
+                // 3 - left
+                f.push_back({2+n,6+n,3+n});
+                f.push_back({3+n,6+n,7+n});
+                // 4 - right
+                f.push_back({1+n,5+n,8+n});
+                f.push_back({8+n,4+n,1+n});
+                }
+            // Exit -x
+                n = v.size() - 8*(3);
+                if ((m.cells[y][x]).left) {
+                // 1 - base
+                f.push_back({1+n,2+n,3+n});
+                f.push_back({3+n,4+n,1+n});
+                // 2 - top
+                f.push_back({5+n,6+n,7+n});
+                f.push_back({7+n,8+n,5+n});
+                // 3 - left
+                f.push_back({2+n,6+n,3+n});
+                f.push_back({3+n,6+n,7+n});
+                // 4 - right
+                f.push_back({1+n,5+n,8+n});
+                f.push_back({8+n,4+n,1+n});
+                }
+            // Exit +y
+                n = v.size() - 8*(2);
+                if ((m.cells[y][x]).down) {
+                // 1 - base
+                f.push_back({1+n,2+n,3+n});
+                f.push_back({3+n,4+n,1+n});
+                // 2 - top
+                f.push_back({5+n,6+n,7+n});
+                f.push_back({7+n,8+n,5+n});
+                // 3 - left
+                f.push_back({1+n,7+n,2+n});
+                f.push_back({7+n,6+n,2+n});
+                // 4 - right
+                f.push_back({4+n,7+n,6+n});
+                f.push_back({4+n,3+n,7+n});
+                }
+            // Exit -y
+                n = v.size() - 8*(1);
+                if ((m.cells[y][x]).up) {
+                // 1 - base
+                f.push_back({1+n,2+n,3+n});
+                f.push_back({3+n,4+n,1+n});
+                // 2 - top
+                f.push_back({5+n,6+n,7+n});
+                f.push_back({7+n,8+n,5+n});
+                // 3 - left
+                f.push_back({1+n,7+n,2+n});
+                f.push_back({7+n,6+n,2+n});
+                // 4 - right
+                f.push_back({4+n,7+n,6+n});
+                f.push_back({4+n,3+n,7+n});
+                }
+
+        }
+    }
+    FILE *fptr = fopen(fileName, "w");
+    for (auto vn : v) {
+        fprintf(fptr, "v %f %f %f\n", vn.x,vn.y,vn.z);
+    }
+    for (auto fn : f) {
+        fprintf(fptr, "f %d %d %d\n", fn.f1,fn.f2,fn.f3);
+    }
+    fclose(fptr);
+}
+
 int main() {
     // Random seed - comment out for debug
     srand(time(NULL));
@@ -337,4 +513,6 @@ int main() {
     // Generate an image of the maze
     Entity *bitmap = m.bitmap();
     ppmg8("output.ppm", bitmap, MAP_WIDTH*CELL_WIDTH, MAP_HEIGHT*CELL_HEIGHT);
+
+    dumpToObj("test.obj", m);
 }
